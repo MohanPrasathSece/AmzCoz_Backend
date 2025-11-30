@@ -16,6 +16,15 @@ app.use(cors({
 
 app.use(express.json())
 
+// Add Content Security Policy header
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://www.google-analytics.com; frame-src 'self';"
+  )
+  next()
+})
+
 app.get('/', (_req, res) => {
   res.json({ status: 'ok' })
 })
