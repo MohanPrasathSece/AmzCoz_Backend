@@ -64,15 +64,20 @@ const formatLeadSummary = (lead) => {
   return lines.join('\n')
 }
 
-const buildOwnerMail = (lead) => ({
-  from: fromAddress,
-  to: ownerRecipients,
-  cc: ccRecipients.length ? ccRecipients : undefined,
-  bcc: bccRecipients.length ? bccRecipients : undefined,
-  replyTo: lead.email || replyToAddress,
-  subject: `New Consultation Request – ${lead.name}`,
-  text: formatLeadSummary(lead),
-})
+const buildOwnerMail = (lead) => {
+  const primaryRecipient = ownerRecipients[0]
+  const additionalRecipients = ownerRecipients.slice(1)
+  
+  return {
+    from: fromAddress,
+    to: primaryRecipient,
+    bcc: additionalRecipients.length > 0 ? additionalRecipients : (bccRecipients.length ? bccRecipients : undefined),
+    cc: ccRecipients.length ? ccRecipients : undefined,
+    replyTo: lead.email || replyToAddress,
+    subject: `New Consultation Request – ${lead.name}`,
+    text: formatLeadSummary(lead),
+  }
+}
 
 const buildClientMail = (lead) => {
   const acknowledgementEnabled = process.env.SEND_CLIENT_ACK !== 'false'
