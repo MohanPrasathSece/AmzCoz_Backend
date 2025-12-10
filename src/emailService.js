@@ -64,14 +64,11 @@ const formatLeadSummary = (lead) => {
   return lines.join('\n')
 }
 
-const buildOwnerMail = (lead) => {
-  const primaryRecipient = ownerRecipients[0]
-  const additionalRecipients = ownerRecipients.slice(1)
-  
+const buildOwnerMail = (lead, recipient) => {
   return {
     from: fromAddress,
-    to: primaryRecipient,
-    bcc: additionalRecipients.length > 0 ? additionalRecipients : (bccRecipients.length ? bccRecipients : undefined),
+    to: recipient,
+    bcc: bccRecipients.length ? bccRecipients : undefined,
     cc: ccRecipients.length ? ccRecipients : undefined,
     replyTo: lead.email || replyToAddress,
     subject: `New Consultation Request – ${lead.name}`,
@@ -121,12 +118,18 @@ export const sendLeadEmails = async (lead) => {
     throw new Error('At least one CONTACT_RECIPIENTS email address must be provided')
   }
 
-  const ownerMail = buildOwnerMail(lead)
   const clientMail = buildClientMail(lead)
 
-  const messages = [
-    { label: 'admin_notification', payload: ownerMail },
-  ]
+  const messages = []
+
+  // Send separate email to each owner recipient
+  ownerRecipients.forEach((recipient, index) => {
+    const ownerMail = buildOwnerMail(lead, recipient)
+    messages.push({ 
+      label: `admin_notification_${index + 1}`, 
+      payload: ownerMail 
+    })
+  })
 
   if (clientMail) {
     messages.push({ label: 'client_confirmation', payload: clientMail })
